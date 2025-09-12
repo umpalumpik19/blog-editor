@@ -90,7 +90,7 @@ const PageEditor = ({ page, onChange }) => {
   const [urlError, setUrlError] = useState('');
 
   const validateUrl = (url) => {
-    const urlPattern = /^[a-z0-9\-]+$/;
+    const urlPattern = /^[a-z0-9-]+$/;
     if (!urlPattern.test(url)) {
       setUrlError('URL должен содержать только латинские буквы, цифры и дефисы');
       return false;

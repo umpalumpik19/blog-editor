@@ -15,6 +15,7 @@ export const importBlogContent = (file) => {
         }
         
         // Преобразуем JS код в объект
+        // eslint-disable-next-line no-eval
         const pagesData = eval(match[1]);
         
         // Добавляем уникальные ID для каждой страницы

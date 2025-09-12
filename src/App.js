@@ -75,6 +75,37 @@ const ImportLabel = styled.label`
   }
 `;
 
+const ClearButton = styled.button`
+  padding: 8px 16px;
+  background: #dc3545;
+  color: #ffffff;
+  border: 1px solid #c82333;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #c82333;
+  }
+`;
+
+const AutoSaveIndicator = styled.div`
+  padding: 4px 8px;
+  background: #28a745;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  
+  &::before {
+    content: "●";
+    font-size: 8px;
+  }
+`;
+
 const EditorContent = styled.div`
   flex: 1;
   display: flex;
@@ -99,19 +130,47 @@ function App() {
   const [selectedPageId, setSelectedPageId] = useState(null);
   const [showCode, setShowCode] = useState(false);
 
-  // Инициализация с пустой страницей
+  // Загрузка данных из localStorage при инициализации
   useEffect(() => {
-    if (pages.length === 0) {
-      const initialPage = {
-        id: '1',
-        url: 'new-blog-page',
-        title: 'Новая страница блога',
-        blocks: []
-      };
-      setPages([initialPage]);
-      setSelectedPageId('1');
+    try {
+      const savedPages = localStorage.getItem('blog-editor-pages');
+      const savedSelectedId = localStorage.getItem('blog-editor-selected-page');
+      
+      if (savedPages) {
+        const parsedPages = JSON.parse(savedPages);
+        if (parsedPages.length > 0) {
+          setPages(parsedPages);
+          setSelectedPageId(savedSelectedId || parsedPages[0].id);
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Ошибка загрузки из localStorage:', error);
     }
-  }, [pages.length]);
+    
+    // Инициализация с пустой страницей, если нет сохраненных данных
+    const initialPage = {
+      id: '1',
+      url: 'new-blog-page',
+      title: 'Новая страница блога',
+      blocks: []
+    };
+    setPages([initialPage]);
+    setSelectedPageId('1');
+  }, []);
+
+  // Автосохранение в localStorage при изменении данных
+  useEffect(() => {
+    if (pages.length > 0) {
+      localStorage.setItem('blog-editor-pages', JSON.stringify(pages));
+    }
+  }, [pages]);
+
+  useEffect(() => {
+    if (selectedPageId) {
+      localStorage.setItem('blog-editor-selected-page', selectedPageId);
+    }
+  }, [selectedPageId]);
 
   const selectedPage = pages.find(page => page.id === selectedPageId);
 
@@ -155,6 +214,23 @@ function App() {
     }
   };
 
+  const handleClearCache = () => {
+    if (window.confirm('Очистить все сохраненные данные? Это действие нельзя отменить.')) {
+      localStorage.removeItem('blog-editor-pages');
+      localStorage.removeItem('blog-editor-selected-page');
+      
+      // Сброс к начальному состоянию
+      const initialPage = {
+        id: '1',
+        url: 'new-blog-page',
+        title: 'Новая страница блога',
+        blocks: []
+      };
+      setPages([initialPage]);
+      setSelectedPageId('1');
+    }
+  };
+
   const generatedCode = generateBlogContentCode(pages);
 
   return (
@@ -174,6 +250,9 @@ function App() {
           <Header>
             <Title>Blog Editor</Title>
             <HeaderButtons>
+              <AutoSaveIndicator>
+                Автосохранение
+              </AutoSaveIndicator>
               <ImportLabel htmlFor="import-file">
                 Import
               </ImportLabel>
@@ -183,6 +262,9 @@ function App() {
                 accept=".js"
                 onChange={handleImport}
               />
+              <ClearButton onClick={handleClearCache}>
+                Очистить кэш
+              </ClearButton>
               <ExportButton 
                 code={generatedCode}
                 onToggleCode={() => setShowCode(!showCode)}

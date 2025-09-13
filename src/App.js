@@ -6,7 +6,7 @@ import PagesList from './components/Sidebar/PagesList';
 import PageEditor from './components/Editor/PageEditor';
 import CodePreview from './components/Export/CodePreview';
 import ExportButton from './components/Export/ExportButton';
-import { generateBlogContentCode } from './utils/codeGenerator';
+import { generateBlogContentCode, generateBlogContentJSON } from './utils/codeGenerator';
 import { importBlogContent } from './utils/fileHandler';
 import './App.css';
 
@@ -240,6 +240,7 @@ function App() {
   };
 
   const generatedCode = generateBlogContentCode(pages);
+  const generatedJSON = generateBlogContentJSON(pages);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -268,14 +269,15 @@ function App() {
               <ImportButton
                 id="import-file"
                 type="file"
-                accept=".js"
+                accept=".js,.json"
                 onChange={handleImport}
               />
               <ClearButton onClick={handleClearCache}>
                 Очистить кэш
               </ClearButton>
-              <ExportButton 
+              <ExportButton
                 code={generatedCode}
+                jsonCode={generatedJSON}
                 onToggleCode={() => setShowCode(!showCode)}
                 showingCode={showCode}
               />

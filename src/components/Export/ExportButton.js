@@ -72,7 +72,7 @@ const DropdownItem = styled.button`
   }
 `;
 
-const ExportButton = ({ code, onToggleCode, showingCode }) => {
+const ExportButton = ({ code, jsonCode, onToggleCode, showingCode }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [copyStatus, setCopyStatus] = useState('');
 
@@ -83,8 +83,20 @@ const ExportButton = ({ code, onToggleCode, showingCode }) => {
     setShowDropdown(false);
   };
 
+  const handleCopyJSON = async () => {
+    const success = await copyToClipboard(jsonCode);
+    setCopyStatus(success ? 'JSON скопирован!' : 'Ошибка копирования');
+    setTimeout(() => setCopyStatus(''), 2000);
+    setShowDropdown(false);
+  };
+
   const handleDownload = () => {
     downloadFile(code, 'blogContent.js');
+    setShowDropdown(false);
+  };
+
+  const handleDownloadJSON = () => {
+    downloadFile(jsonCode, 'blog-content.json');
     setShowDropdown(false);
   };
 
@@ -105,10 +117,16 @@ const ExportButton = ({ code, onToggleCode, showingCode }) => {
         {showDropdown && (
           <Dropdown>
             <DropdownItem onClick={handleCopy}>
-              {copyStatus || 'Скопировать код'}
+              {copyStatus || 'Скопировать JS код'}
             </DropdownItem>
             <DropdownItem onClick={handleDownload}>
-              Скачать файл
+              Скачать JS файл
+            </DropdownItem>
+            <DropdownItem onClick={handleCopyJSON}>
+              {copyStatus || 'Скопировать JSON'}
+            </DropdownItem>
+            <DropdownItem onClick={handleDownloadJSON}>
+              Скачать JSON файл
             </DropdownItem>
           </Dropdown>
         )}

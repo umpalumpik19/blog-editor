@@ -3,21 +3,28 @@
 export const importBlogContent = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       try {
         const content = e.target.result;
-        
-        // Извлекаем массив blogPages из JS кода
-        const match = content.match(/export const blogPages = (\[[\s\S]*?\]);/);
-        if (!match) {
-          throw new Error('Не найден массив blogPages в файле');
+        const filename = file.name.toLowerCase();
+
+        let pagesData;
+
+        if (filename.endsWith('.json')) {
+          // Импорт JSON файла
+          const jsonData = JSON.parse(content);
+          pagesData = jsonData.blogPages || jsonData;
+        } else {
+          // Импорт JS файла (обратная совместимость)
+          const match = content.match(/export const blogPages = (\[[\s\S]*?\]);/);
+          if (!match) {
+            throw new Error('Не найден массив blogPages в файле');
+          }
+          // eslint-disable-next-line no-eval
+          pagesData = eval(match[1]);
         }
-        
-        // Преобразуем JS код в объект
-        // eslint-disable-next-line no-eval
-        const pagesData = eval(match[1]);
-        
+
         // Добавляем уникальные ID для каждой страницы
         const pagesWithIds = pagesData.map((page, index) => ({
           ...page,
@@ -27,23 +34,26 @@ export const importBlogContent = (file) => {
             id: (Date.now() + index * 1000 + blockIndex).toString()
           })) : []
         }));
-        
+
         resolve(pagesWithIds);
       } catch (error) {
         reject(new Error('Ошибка при парсинге файла: ' + error.message));
       }
     };
-    
+
     reader.onerror = () => {
       reject(new Error('Ошибка при чтении файла'));
     };
-    
+
     reader.readAsText(file);
   });
 };
 
 export const downloadFile = (content, filename) => {
-  const blob = new Blob([content], { type: 'text/javascript' });
+  const isJSON = filename.endsWith('.json');
+  const blob = new Blob([content], {
+    type: isJSON ? 'application/json' : 'text/javascript'
+  });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

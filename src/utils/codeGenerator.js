@@ -1,4 +1,23 @@
-// Генератор кода для blogContent.js
+// Генератор JSON для blog-content.json
+
+export const generateBlogContentJSON = (pages) => {
+  // Сортируем страницы по order перед генерацией
+  const sortedPages = [...pages].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  const blogData = {
+    blogPages: sortedPages.map(page => ({
+      url: page.url,
+      title: page.title,
+      order: page.order || 1,
+      ...(page.previewImage && { previewImage: page.previewImage }),
+      blocks: page.blocks || []
+    }))
+  };
+
+  return JSON.stringify(blogData, null, 2);
+};
+
+// Генератор кода для blogContent.js (для обратной совместимости)
 
 export const generateBlogContentCode = (pages) => {
   const formatBlocks = (blocks) => {

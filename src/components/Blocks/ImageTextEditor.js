@@ -122,6 +122,19 @@ const ImageTextEditor = ({ block, onChange }) => {
   return (
     <Container>
       <FormGroup>
+        <Label>Заголовок блока:</Label>
+        <Input
+          type="text"
+          value={block.title || ''}
+          onChange={(e) => handleChange('title', e.target.value)}
+          placeholder="Заголовок блока (необязательно)"
+        />
+        <HelpText>
+          Заголовок будет отображен над текстом блока
+        </HelpText>
+      </FormGroup>
+
+      <FormGroup>
         <Label>Путь к изображению:</Label>
         <Input
           type="text"
@@ -173,7 +186,7 @@ const ImageTextEditor = ({ block, onChange }) => {
         </HelpText>
       </FormGroup>
 
-      {(block.image || block.text) && (
+      {(block.image || block.text || block.title) && (
         <Preview>
           <h4 style={{ margin: '0 0 15px 0', color: '#ffffff', fontSize: '14px' }}>
             Превью (десктоп):
@@ -183,10 +196,20 @@ const ImageTextEditor = ({ block, onChange }) => {
               {block.image ? `Изображение: ${block.image.split('/').pop()}` : 'Нет изображения'}
             </PreviewImage>
             <PreviewText position={block.position}>
+              {block.title && (
+                <h3 style={{
+                  margin: '0 0 12px 0',
+                  color: '#ffffff',
+                  fontSize: '18px',
+                  fontWeight: '600'
+                }}>
+                  {block.title}
+                </h3>
+              )}
               {block.text ? (
                 <div dangerouslySetInnerHTML={{ __html: block.text }} />
               ) : (
-                'Нет текста'
+                !block.title && 'Нет текста'
               )}
             </PreviewText>
           </PreviewGrid>

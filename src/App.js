@@ -153,6 +153,7 @@ function App() {
       id: '1',
       url: 'new-blog-page',
       title: 'Новая страница блога',
+      order: 1,
       blocks: []
     };
     setPages([initialPage]);
@@ -181,14 +182,20 @@ function App() {
   };
 
   const handleAddPage = () => {
+    const maxOrder = Math.max(0, ...pages.map(p => p.order || 0));
     const newPage = {
       id: Date.now().toString(),
       url: 'new-page',
       title: 'Новая страница',
+      order: maxOrder + 1,
       blocks: []
     };
     setPages(prev => [...prev, newPage]);
     setSelectedPageId(newPage.id);
+  };
+
+  const handleReorderPages = (reorderedPages) => {
+    setPages(reorderedPages);
   };
 
   const handleDeletePage = (pageId) => {
@@ -224,6 +231,7 @@ function App() {
         id: '1',
         url: 'new-blog-page',
         title: 'Новая страница блога',
+        order: 1,
         blocks: []
       };
       setPages([initialPage]);
@@ -243,6 +251,7 @@ function App() {
             onSelectPage={setSelectedPageId}
             onAddPage={handleAddPage}
             onDeletePage={handleDeletePage}
+            onReorderPages={handleReorderPages}
           />
         </Sidebar>
         

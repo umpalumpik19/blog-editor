@@ -189,6 +189,20 @@ const PageEditor = ({ page, onChange }) => {
             </div>
           )}
         </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="page-preview">Превью изображение:</Label>
+          <Input
+            id="page-preview"
+            type="text"
+            value={page.previewImage || ''}
+            onChange={(e) => handlePageChange('previewImage', e.target.value)}
+            placeholder="/blog-images/preview.jpg"
+          />
+          <div style={{ fontSize: '12px', color: '#888888', marginTop: '5px' }}>
+            Изображение для отображения на карточке блога в списке. Оставьте пустым для черной карточки
+          </div>
+        </FormGroup>
       </PageHeader>
 
       <div>

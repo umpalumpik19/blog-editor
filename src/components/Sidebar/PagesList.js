@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useDrag, useDrop } from 'react-dnd';
 
 const Container = styled.div`
   display: flex;
@@ -44,15 +45,22 @@ const PagesList = styled.div`
 const PageItem = styled.div`
   padding: 12px;
   margin-bottom: 8px;
-  background: ${props => props.selected ? '#404040' : '#2d2d2d'};
-  border: 1px solid ${props => props.selected ? '#606060' : '#404040'};
+  background: ${props =>
+    props.isDragging ? 'rgba(45, 45, 45, 0.5)' :
+    props.isOver ? '#505050' :
+    props.selected ? '#404040' : '#2d2d2d'};
+  border: 1px solid ${props =>
+    props.isOver ? '#0066cc' :
+    props.selected ? '#606060' : '#404040'};
   border-radius: 6px;
-  cursor: pointer;
+  cursor: ${props => props.isDragging ? 'grabbing' : 'grab'};
   transition: all 0.2s;
   position: relative;
+  opacity: ${props => props.isDragging ? 0.5 : 1};
+  transform: ${props => props.isOver ? 'translateY(-2px)' : 'none'};
 
   &:hover {
-    background: #404040;
+    background: ${props => props.isDragging ? 'rgba(45, 45, 45, 0.5)' : '#404040'};
     border-color: #606060;
   }
 `;
@@ -105,7 +113,98 @@ const BlocksCount = styled.div`
   margin-top: 4px;
 `;
 
-const PagesListComponent = ({ pages, selectedPageId, onSelectPage, onAddPage, onDeletePage }) => {
+const DragHandle = styled.div`
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666666;
+  font-size: 12px;
+  cursor: grab;
+
+  &:hover {
+    color: #888888;
+  }
+`;
+
+const DraggablePageItem = ({
+  page,
+  index,
+  selected,
+  onSelectPage,
+  onDeletePage,
+  onMoveItem,
+  totalPages
+}) => {
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'PAGE_ITEM',
+    item: { id: page.id, index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [{ isOver }, dropRef] = useDrop({
+    accept: 'PAGE_ITEM',
+    hover: (draggedItem) => {
+      if (draggedItem.index !== index) {
+        onMoveItem(draggedItem.index, index);
+        draggedItem.index = index;
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  });
+
+  return (
+    <PageItem
+      ref={(node) => dragRef(dropRef(node))}
+      selected={selected}
+      isDragging={isDragging}
+      isOver={isOver}
+      onClick={() => onSelectPage(page.id)}
+    >
+      <DragHandle>⋮⋮</DragHandle>
+      <div style={{ marginLeft: '20px' }}>
+        <PageTitle>{page.title}</PageTitle>
+        <PageUrl>/blog/{page.url}</PageUrl>
+        <BlocksCount>
+          {page.blocks ? page.blocks.length : 0} блоков
+        </BlocksCount>
+      </div>
+      {totalPages > 1 && (
+        <DeleteButton
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeletePage(page.id);
+          }}
+          title="Удалить страницу"
+        >
+          ×
+        </DeleteButton>
+      )}
+    </PageItem>
+  );
+};
+
+const PagesListComponent = ({ pages, selectedPageId, onSelectPage, onAddPage, onDeletePage, onReorderPages }) => {
+  const handleMoveItem = (fromIndex, toIndex) => {
+    if (onReorderPages && fromIndex !== toIndex) {
+      const reorderedPages = [...pages];
+      const [draggedItem] = reorderedPages.splice(fromIndex, 1);
+      reorderedPages.splice(toIndex, 0, draggedItem);
+
+      // Обновляем order для всех страниц
+      const updatedPages = reorderedPages.map((page, index) => ({
+        ...page,
+        order: index + 1
+      }));
+
+      onReorderPages(updatedPages);
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -114,31 +213,19 @@ const PagesListComponent = ({ pages, selectedPageId, onSelectPage, onAddPage, on
           + Добавить страницу
         </AddButton>
       </Header>
-      
+
       <PagesList>
-        {pages.map(page => (
-          <PageItem
+        {pages.map((page, index) => (
+          <DraggablePageItem
             key={page.id}
+            page={page}
+            index={index}
             selected={page.id === selectedPageId}
-            onClick={() => onSelectPage(page.id)}
-          >
-            <PageTitle>{page.title}</PageTitle>
-            <PageUrl>/blog/{page.url}</PageUrl>
-            <BlocksCount>
-              {page.blocks ? page.blocks.length : 0} блоков
-            </BlocksCount>
-            {pages.length > 1 && (
-              <DeleteButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeletePage(page.id);
-                }}
-                title="Удалить страницу"
-              >
-                ×
-              </DeleteButton>
-            )}
-          </PageItem>
+            onSelectPage={onSelectPage}
+            onDeletePage={onDeletePage}
+            onMoveItem={handleMoveItem}
+            totalPages={pages.length}
+          />
         ))}
       </PagesList>
     </Container>

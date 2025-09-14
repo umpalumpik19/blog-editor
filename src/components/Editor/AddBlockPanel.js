@@ -62,6 +62,11 @@ const blockTypes = [
     description: 'Простой текстовый блок с опциональным заголовком. Текст не центрируется.'
   },
   {
+    type: 'video',
+    name: 'Video Block',
+    description: 'Блок с YouTube видео. Опциональные заголовок и текст после видео.'
+  },
+  {
     type: 'imageText',
     name: 'Image + Text',
     description: 'Блок с изображением и текстом. Адаптивное позиционирование.'

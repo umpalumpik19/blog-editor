@@ -147,6 +147,11 @@ const PageEditor = ({ page, onChange }) => {
       newBlock.title = '';
     }
 
+    if (blockType === 'video') {
+      // Video block has optional title, required videoUrl, and optional text
+      newBlock.videoUrl = '';
+    }
+
     const newBlocks = [...(page.blocks || []), newBlock];
     onChange({ blocks: newBlocks });
   };

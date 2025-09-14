@@ -4,6 +4,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import IntroBlockEditor from '../Blocks/IntroBlockEditor';
 import ImageTextEditor from '../Blocks/ImageTextEditor';
 import CentralBlockEditor from '../Blocks/CentralBlockEditor';
+import TextBlockEditor from '../Blocks/TextBlockEditor';
 
 const Container = styled.div`
   background: #2d2d2d;
@@ -104,6 +105,7 @@ const ToggleButton = styled.button`
 
 const blockTypeNames = {
   intro: 'Intro Block',
+  text: 'Text Block',
   imageText: 'Image + Text',
   central: 'Central Block'
 };
@@ -140,6 +142,8 @@ const BlockEditor = ({ block, index, onChange, onDelete, onMove }) => {
         return <ImageTextEditor block={block} onChange={onChange} />;
       case 'central':
         return <CentralBlockEditor block={block} onChange={onChange} />;
+      case 'text':
+        return <TextBlockEditor block={block} onChange={onChange} />;
       default:
         return <div>Неизвестный тип блока: {block.type}</div>;
     }

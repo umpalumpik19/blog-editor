@@ -142,6 +142,11 @@ const PageEditor = ({ page, onChange }) => {
       newBlock.image = '';
     }
 
+    if (blockType === 'text') {
+      // Text block has optional title and text
+      newBlock.title = '';
+    }
+
     const newBlocks = [...(page.blocks || []), newBlock];
     onChange({ blocks: newBlocks });
   };
